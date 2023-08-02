@@ -25,7 +25,8 @@ routes.post('/login/', validateLogin, async (req, res) => {
                         model: persona, include: [
                             { model: barrio },
                         ]
-                    }
+                    },
+                    { model: vendedor },
                 ]
             }).then((usuario) => {
                 if (usuario.length != 0) {
@@ -60,7 +61,8 @@ routes.post('/login/', validateLogin, async (req, res) => {
 routes.get('/get/', verificaToken, async (req, res) => {
     await usuariomodel.findAll({
         include: [
-            { model: persona, include: [{ model: barrio },] }
+            { model: persona, include: [{ model: barrio }, ] },
+            { model: vendedor },
         ]
     }).then((usuarios) => {
         jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
@@ -87,7 +89,7 @@ routes.get('/get/:idusuario', verificaToken, async (req, res) => {
     const usuarios = await usuariomodel.findByPk(req.params.idusuario, {
         include: [
 
-            { model: persona, include: [{ model: barrio },] }
+            { model: persona, include: [{ model: barrio },] },
         ]
     })
     jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
@@ -162,7 +164,6 @@ routes.put('/put/:idpersona/:idusuario', verificaToken, validateCreate, async (r
     const tusu = await database.transaction();
     const tper = await database.transaction();
     let validacionPassword = false;
-
     await usuariomodel.findByPk(req.params.idusuario).then((user) => {
         console.log(user.password)
         console.log(md5(req.body.usuario.password))
@@ -189,7 +190,7 @@ routes.put('/put/:idpersona/:idusuario', verificaToken, validateCreate, async (r
     try {
 
         jwt.verify(req.token, process.env.CLAVESECRETA, async (errorAuth, authData) => {
-            
+
             if (errorAuth) {
                 //Logica para los que si tienen token
                 if (!validateNivel({ authData: authData })) {

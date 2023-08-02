@@ -1,6 +1,7 @@
 const{DataTypes}=require("sequelize")
 const database=require("../database");
 const propiedad_has_fotos = require("./model_propiedad_has_fotos");
+const Vendedor = require("./model_vendedor");
 
 const vw_propiedad = database.define("Vw_propiedades",{
     idpropiedad:{ type:DataTypes.INTEGER, autoIncrement:true, primaryKey:true,},
@@ -18,7 +19,7 @@ const vw_propiedad = database.define("Vw_propiedades",{
     contacto_extra:{type:DataTypes.STRING},
     idcliente:{type:DataTypes.INTEGER,allowNull:false},
     dormitorio:{type:DataTypes.INTEGER},
-    idusuario:{type:DataTypes.INTEGER,},
+    idvendedor:{type:DataTypes.INTEGER,},
     idbarrio:{type:DataTypes.INTEGER,allowNull:false},
     estado:{type:DataTypes.STRING},
     nombre:{type:DataTypes.STRING},
@@ -26,9 +27,18 @@ const vw_propiedad = database.define("Vw_propiedades",{
     documento:{type:DataTypes.STRING},
     tipo_propiedad:{type:DataTypes.STRING},
     barrio:{type:DataTypes.STRING},
+    idciudad:{type:DataTypes.INTEGER},
     ciudad:{type:DataTypes.STRING},
+    img_vendedor:{type:DataTypes.STRING},
+    nombre_vendedor:{type:DataTypes.STRING},
+    doc_vendedor:{type:DataTypes.STRING},
+    idusuario_vendedor:{type:DataTypes.INTEGER},
+    correo_vendedor:{type:DataTypes.STRING},
+    inst:{type:DataTypes.STRING},
+    fb:{type:DataTypes.STRING},
+    whatsapp:{type:DataTypes.STRING},
 },{
-    tableName:"vw_propiedades",
+    tableName:"vw_propiedades", 
     timestamps:false,
 })
 
@@ -36,6 +46,12 @@ vw_propiedad.hasMany(propiedad_has_fotos,{
     foreignKey:"idpropiedad",
     primaryKey:"idpropiedad",
     sourceKey:"idpropiedad",
+});
+
+vw_propiedad.hasOne(Vendedor,{
+    foreignKey:"idvendedor",
+    primaryKey:"idvendedor",
+    sourceKey:"idvendedor"
 });
 
 

@@ -1,6 +1,7 @@
 const {DataTypes} = require('sequelize')
 const database = require('../database')
 const persona= require('./model_persona')
+const vendedor = require('./model_vendedor')
 
 const usuario= database.define("usuario",{
     idusuario:{
@@ -42,6 +43,12 @@ usuario.hasOne(persona,{
     foreignKey:"idpersona",
     primaryKey:"idpersona",
     sourceKey:"idpersona"
+})
+
+usuario.hasOne(vendedor,{
+    foreignKey:"idusuario",
+    primaryKey:"idusuario",
+    sourceKey:"idusuario"
 })
 
 module.exports=usuario

@@ -22,7 +22,7 @@ const cliente = database.define("cliente",{
         allowNull:false
     },
 },{
-    tableName:"Cliente",
+    tableName:"cliente",
     timestamps:false,
 })
 

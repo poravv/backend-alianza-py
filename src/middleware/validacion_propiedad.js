@@ -13,7 +13,7 @@ const validateCreate = [
     check('long').exists().not().isEmpty().withMessage('Cargar ubicacion'),
     //check('contacto_extra').exists().not().isEmpty().withMessage('Cargar un contacto'),
     //check('idpropiedad').exists().not().isEmpty().withMessage('Seleccione tipo de propiedad'),
-    check('idusuario').exists().not().isEmpty().withMessage('No se ha cargado usuario'),
+    check('idvendedor').exists().not().isEmpty().withMessage('No se ha cargado vendedor'),
     //scheck('email').exists().not().isEmpty().isEmail().withMessage('Favor cargar un email valido'),
     (req,res,next) => {
         validateResult(req,res,next)

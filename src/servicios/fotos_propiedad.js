@@ -288,21 +288,18 @@ routes.post('/images/:idpropiedad', verificaToken, upload.single('image'), async
 routes.delete('/image/:filename', (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join('uploads/', filename);
-
     // Verificar si el archivo existe
     fs.access(filePath, fs.constants.F_OK, (err) => {
         if (err) {
             console.error('El archivo no existe');
             return res.status(404).json({ message: 'El archivo no existe' });
         }
-
         // Eliminar el archivo
         fs.unlink(filePath, (err) => {
             if (err) {
                 console.error('Error al eliminar el archivo', err);
                 return res.status(500).json({ message: 'Error al eliminar el archivo' });
             }
-
             console.log('Archivo eliminado correctamente');
             return res.status(200).json({ message: 'Archivo eliminado correctamente' });
         });

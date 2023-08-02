@@ -1,5 +1,8 @@
 const{DataTypes}=require("sequelize")
 const database=require("../database")
+const barrio = require("./model_barrio")
+const vendedor = require("./model_vendedor")
+
 
 const propiedad = database.define("Propiedad",{
     idpropiedad:{ type:DataTypes.INTEGER, autoIncrement:true, primaryKey:true,},
@@ -17,12 +20,24 @@ const propiedad = database.define("Propiedad",{
     contacto_extra:{type:DataTypes.STRING},
     idcliente:{type:DataTypes.INTEGER,allowNull:false},
     dormitorio:{type:DataTypes.INTEGER},
-    idusuario:{type:DataTypes.INTEGER,},
+    idvendedor:{type:DataTypes.INTEGER},
     idbarrio:{type:DataTypes.INTEGER,allowNull:false},
     estado:{type:DataTypes.STRING},
 },{
     tableName:"propiedad",
     timestamps:false,
+})
+
+propiedad.hasOne(barrio,{
+    foreignKey:"idbarrio",
+    primaryKey:"idbarrio",
+    sourceKey:"idbarrio"
+})
+
+propiedad.hasOne(vendedor,{
+    foreignKey:"idvendedor",
+    primaryKey:"idvendedor",
+    sourceKey:"idvendedor"
 })
 
 module.exports=propiedad
