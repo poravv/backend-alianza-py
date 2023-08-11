@@ -2,6 +2,7 @@ const express = require('express');
 const routes = express.Router();
 const jwt = require("jsonwebtoken");
 const barrio = require("../models/model_barrio");
+const ciudad = require("../models/model_ciudad");
 const database = require('../database');
 const{QueryTypes}=require("sequelize");
 const verificaToken = require('../middleware/token_extractor');
@@ -33,7 +34,11 @@ routes.get('/getsql/', verificaToken, async (req, res) => {
 
 routes.get('/get/', verificaToken, async (req, res) => {
     
-    await barrio.findAll().then((barrioes) =>{
+    await barrio.findAll({
+        include: [
+            { model: ciudad }
+        ]
+    }).then((barrioes) =>{
         jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
             if (errorAuth) {
                 res.json({
@@ -62,6 +67,7 @@ routes.get('/get/:idciudad', async (req, res) => {
 
 routes.post('/post/', verificaToken,validateCreate, async (req, res) => {
     const t = await database.transaction();
+    //console.log(req.body)
     try {
         await barrio.create(req.body, {
             transaction: t

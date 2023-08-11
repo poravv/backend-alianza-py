@@ -2,7 +2,6 @@ const express = require('express');
 const routes = express.Router();
 const jwt = require("jsonwebtoken");
 const propiedad = require("../models/model_propiedad");
-const vw_destacados = require("../models/model_vw_destacados");
 const database = require('../database');
 const { QueryTypes } = require("sequelize");
 const verificaToken = require('../middleware/token_extractor');
@@ -36,15 +35,13 @@ routes.get('/getsql/', verificaToken, async (req, res) => {
 
 routes.get('/getDestacados/', async (req, res) => {
     try {
-        await vw_destacados.findAll({
-            include: [
-                {
-                    model: propiedad_has_fotos, include: [
-                        { model: fotos_propiedad },
-                    ]
-                },
-            ]
-        }).then((propiedades) => {
+        await vw_propiedad.findAll({where:{destacado:'Si'}, include: [
+            {
+                model: propiedad_has_fotos, include: [
+                    { model: fotos_propiedad },
+                ]
+            },
+        ]}).then((propiedades) => {
                 res.json({
                     mensaje: "successfully",
                     body: propiedades
@@ -207,13 +204,13 @@ routes.post('/post/', verificaToken, validateCreate, async (req, res) => {
 routes.put('/put/:idpropiedad', verificaToken, async (req, res) => {
 
     const t = await database.transaction();
+    
+    console.log(req.body);
+
     try {
         await propiedad.update(req.body, { where: { idpropiedad: req.params.idpropiedad } }, {
             transaction: t
         }).then((prop) => {
-            
-            console.log(prop)
-
             jwt.verify(req.token, process.env.CLAVESECRETA, async (errorAuth, authData) => {
                 if (!validateNivel({ authData: authData })) {
                     res.json({
@@ -249,6 +246,7 @@ routes.put('/put/:idpropiedad', verificaToken, async (req, res) => {
             });
         });
     } catch (error) {
+        console.log(error)
         res.json({
             mensaje: "error",
             error: error,

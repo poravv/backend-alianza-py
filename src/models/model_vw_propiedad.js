@@ -37,6 +37,7 @@ const vw_propiedad = database.define("Vw_propiedades",{
     inst:{type:DataTypes.STRING},
     fb:{type:DataTypes.STRING},
     whatsapp:{type:DataTypes.STRING},
+    destacado:{type:DataTypes.STRING},
 },{
     tableName:"vw_propiedades", 
     timestamps:false,

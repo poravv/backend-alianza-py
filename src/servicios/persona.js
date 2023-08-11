@@ -3,6 +3,7 @@ const routes = express.Router();
 const jwt = require("jsonwebtoken");
 const persona = require("../models/model_persona");
 const barrio = require("../models/model_barrio")
+const vw_personas = require("../models/model_vw_personas")
 const database = require('../database');
 const { QueryTypes } = require("sequelize");
 const verificaToken = require('../middleware/token_extractor');
@@ -11,8 +12,10 @@ const { validateNivel } = require('../middleware/validacion_nivel');
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs');
+const vw_persona_usuario = require('../models/model_vw_persona_usuario');
 require("dotenv").config();
-
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 routes.get('/getsql/', verificaToken, async (req, res) => {
     await database.query('select * from persona order by descripcion asc', { type: QueryTypes.SELECT })
@@ -52,6 +55,22 @@ routes.get('/get/', verificaToken, async (req, res) => {
                 })
             }
         })
+    })
+})
+
+routes.get('/getvw/', verificaToken, async (req, res) => {
+    
+    const rspersonas = await vw_personas.findAll();
+    jwt.verify(req.token, process.env.CLAVESECRETA, (err, authData) => {
+        if (err) {
+            res.json({error: "Error ",err});;
+        } else {
+            res.json({
+                mensaje: "successfully",
+                authData: authData,
+                body: rspersonas
+            })
+        }
     })
 })
 
@@ -99,11 +118,72 @@ routes.get('/get_doc/:documento', verificaToken, async (req, res) => {
     })
 });
 
+routes.get('/likePersona/:documento', verificaToken, async (req, res) => {
+    const rspersonas = await vw_persona_usuario.findAll({where:{
+        documento: {
+            [Op.like]: `${req.params.documento}%`
+          }
+    }})
+    jwt.verify(req.token, process.env.CLAVESECRETA, (err, authData) => {
+        if (err) {
+            res.json({error: "Error ",err});;
+        } else {
+            res.json({
+                mensaje: "successfully",
+                authData: authData,
+                body: rspersonas
+            });
+        }
+    })
+})
+
 routes.post('/post/', verificaToken, validateCreate, async (req, res) => {
     const t = await database.transaction();
     console.log(req.body)
     try {
         await persona.create(req.body.persona, {
+            transaction: t
+        }).then((per) => {
+            jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
+                if (!validateNivel({ authData: authData })) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje: "No posee nivel para actualizar"
+                    });
+                    return;
+                };
+                if (errorAuth) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje: "Error de autenticacion",
+                        error: errorAuth
+                    });
+                } else {
+                    t.commit();
+                    res.json({
+                        mensaje: "successfully",
+                        detmensaje: "Registro almacenado satisfactoriamente",
+                        authData: authData,
+                        body: per
+                    });
+                }
+            });
+        });
+    } catch (error) {
+        res.json({
+            mensaje: "error",
+            error: error,
+            detmensaje: "Error en el servidor, verifique los campos cargados, de lo contrario contacte con el administrador"
+        });
+        t.rollback();
+    }
+})
+
+routes.post('/postper/', verificaToken, async (req, res) => {
+    const t = await database.transaction();
+    //console.log(req.body)
+    try {
+        await persona.create(req.body, {
             transaction: t
         }).then((per) => {
             jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
@@ -176,6 +256,53 @@ routes.put('/put/:idpersona', verificaToken, validateCreate, async (req, res) =>
             });
         });
     } catch (error) {
+        res.json({
+            mensaje: "error",
+            error: error,
+            detmensaje: "Error en el servidor, verifique los campos cargados, de lo contrario contacte con el administrador"
+        });
+        t.rollback();
+    }
+})
+
+
+routes.put('/putper/:idpersona', verificaToken, async (req, res) => {
+    const t = await database.transaction();
+    console.log(req.body)
+    console.log(req.body)
+    try {
+        await persona.update(req.body, { where: { idpersona: req.params.idpersona } }, {
+            transaction: t
+        }).then((per) => {
+            jwt.verify(req.token, process.env.CLAVESECRETA, async (errorAuth, authData) => {
+                if (!validateNivel({ authData: authData })) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje: "No posee nivel para actualizar"
+                    });
+                    return;
+                };
+                if (errorAuth) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje: "Error de autenticacion",
+                        error: errorAuth
+                    });
+                    return;
+                } else {
+                    t.commit();
+                    const persona_upd = await persona.findByPk(req.params.idpersona)
+                    res.json({
+                        mensaje: "successfully",
+                        detmensaje: "Registro actualizado satisfactoriamente",
+                        authData: authData,
+                        body: persona_upd
+                    });
+                }
+            });
+        });
+    } catch (error) {
+        console.log(error)
         res.json({
             mensaje: "error",
             error: error,

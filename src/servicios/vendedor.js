@@ -2,6 +2,7 @@ const express = require('express');
 const routes = express.Router();
 const jwt = require("jsonwebtoken");
 const vendedor = require("../models/model_vendedor");
+const vw_vendedor = require("../models/model_vw_vendedores");
 const database = require('../database');
 const{QueryTypes}=require("sequelize");
 const verificaToken = require('../middleware/token_extractor');
@@ -32,8 +33,16 @@ routes.get('/getsql/', verificaToken, async (req, res) => {
 
 
 routes.get('/get/', async (req, res) => {
-    
     await vendedor.findAll().then((vendedores) =>{
+        res.json({
+            mensaje: "successfully",
+            body: vendedores
+        });
+    });
+});
+
+routes.get('/getvw/', async (req, res) => {
+    await vw_vendedor.findAll().then((vendedores) =>{
         res.json({
             mensaje: "successfully",
             body: vendedores
@@ -61,7 +70,7 @@ routes.get('/get/:idvendedor', verificaToken, async (req, res) => {
     })
 });
 
-routes.post('/post/', verificaToken,validateCreate, async (req, res) => {
+routes.post('/post/', verificaToken, async (req, res) => {
     const t = await database.transaction();
     try {
         await vendedor.create(req.body, {

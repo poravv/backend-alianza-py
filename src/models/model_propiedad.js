@@ -23,6 +23,7 @@ const propiedad = database.define("Propiedad",{
     idvendedor:{type:DataTypes.INTEGER},
     idbarrio:{type:DataTypes.INTEGER,allowNull:false},
     estado:{type:DataTypes.STRING},
+    destacado:{type:DataTypes.STRING},
 },{
     tableName:"propiedad",
     timestamps:false,

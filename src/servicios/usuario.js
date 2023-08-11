@@ -2,6 +2,7 @@ const express = require('express');
 const routes = express.Router();
 const jwt = require("jsonwebtoken");
 const usuariomodel = require("../models/model_usuario")
+const vw_usuario = require("../models/model_vw_usuario")
 const barrio = require("../models/model_barrio")
 const vendedor = require("../models/model_vendedor")
 const persona = require("../models/model_persona")
@@ -11,7 +12,6 @@ const { validateUsuario, validateLogin } = require('../middleware/validacion_usu
 const { validateCreate } = require('../middleware/validacion_persona');
 const { validateNivel } = require('../middleware/validacion_nivel');
 const md5 = require('md5');
-const usuario = require('../models/model_usuario');
 require("dotenv").config()
 
 routes.post('/login/', validateLogin, async (req, res) => {
@@ -49,7 +49,7 @@ routes.post('/login/', validateLogin, async (req, res) => {
                 }
             })
     } catch (error) {
-        res.status(400).json(
+        res.json(
             {
                 mensaje: "error",
                 detmensaje: "Error de acceso, favor contacte con el administrador"
@@ -81,8 +81,26 @@ routes.get('/get/', verificaToken, async (req, res) => {
             }
         })
     })
+})
 
-
+routes.get('/getvw/', verificaToken, async (req, res) => {
+    await vw_usuario.findAll().then((usuarios) => {
+        jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
+            if (errorAuth) {
+                res.json({
+                    mensaje: "error",
+                    detmensaje: "Error de autenticacion, vuelva a iniciar la sesion, sino, contacte con el administrador",
+                    errorAuth
+                });
+            } else {
+                res.json({
+                    mensaje: "successfully",
+                    authData: authData,
+                    body: usuarios
+                })
+            }
+        })
+    })
 })
 
 routes.get('/get/:idusuario', verificaToken, async (req, res) => {
@@ -157,6 +175,90 @@ routes.post('/post/', validateCreate, validateUsuario, async (req, res) => {
             detmensaje: "Error en el servidor, verifique los campos cargados, de lo contrario contacte con el administrador"
         });
 
+    }
+})
+
+routes.post('/postusu/', verificaToken, async (req, res) => {
+    const t = await database.transaction();
+    try {
+        await usuariomodel.create(req.body, {
+            transaction: t
+        }).then((barrioes)=>{
+            jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
+                if(!validateNivel({authData: authData})){
+                    res.json({ 
+                        mensaje:"error",
+                        detmensaje: "No posee nivel para actualizar"
+                    });
+                    return;
+                };
+                if (errorAuth) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje:"Error de autenticacion",
+                        error:errorAuth
+                    });
+                } else {
+                    t.commit();
+                    res.json({
+                        mensaje: "successfully",
+                        detmensaje:"Registro almacenado satisfactoriamente",
+                        authData: authData,
+                        body: barrioes
+                    });
+                }
+            });
+        });
+    } catch (error) {
+        res.json({
+            mensaje: "error",
+            error:error,
+            detmensaje:"Error en el servidor, verifique los campos cargados, de lo contrario contacte con el administrador"
+        });
+        t.rollback();
+    }
+})
+
+
+routes.put('/putusu/:idusuario', verificaToken, async (req, res) => {
+
+    const t = await database.transaction();
+    try {
+        await usuariomodel.update(req.body, { where: { idusuario: req.params.idusuario } }, {
+            transaction: t
+        }).then((user)=>{
+            jwt.verify(req.token, process.env.CLAVESECRETA, (errorAuth, authData) => {
+                if(!validateNivel({authData: authData})){
+                    res.json({ 
+                        mensaje:"error",
+                        detmensaje: "No posee nivel para actualizar"
+                    });
+                    return;
+                };
+                if (errorAuth) {
+                    res.json({
+                        mensaje: "error",
+                        detmensaje:"Error de autenticacion",
+                        error:errorAuth
+                    });
+                } else {
+                    t.commit();
+                    res.json({
+                        mensaje: "successfully",
+                        detmensaje:"Registro actualizado satisfactoriamente",
+                        authData: authData,
+                        body: user
+                    });
+                }
+            });
+        });
+    } catch (error) {
+        res.json({
+            mensaje: "error",
+            error:error,
+            detmensaje:"Error en el servidor, verifique los campos cargados, de lo contrario contacte con el administrador"
+        });
+        t.rollback();
     }
 })
 

@@ -8,7 +8,7 @@ const validateResult = (req, res, next) => {
         //res.status(403)
         //res.send({ errors: err})
         //console.log('Cayo en catch: ',error.errors)
-        res.status(403).send({
+        res.json({
             mensaje: "error",
             detmensaje: "Error en la validacion de datos",
             error:error.errors
